@@ -95,16 +95,13 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     /** {@inheritDoc} */
     @Override
     public void disconnect(IConnection conn, IScope scope) {
+        lock.lock();
         try {
-            if (lock.tryLock(1, TimeUnit.SECONDS)) {
-                try {
-                    super.disconnect(conn, scope);
-                } finally {
-                    lock.unlock();
-                }
+            super.disconnect(conn, scope);
+        } finally {
+            if (lock.isLocked()) {
+                lock.unlock();
             }
-        } catch (InterruptedException e) {
-            log.error("Failed to lock", e);
         }
     }
 
@@ -128,16 +125,13 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     /** {@inheritDoc} */
     @Override
     public void leave(IClient client, IScope scope) {
+        lock.lock();
         try {
-            if (lock.tryLock(1, TimeUnit.SECONDS)) {
-                try {
-                    super.leave(client, scope);
-                } finally {
-                    lock.unlock();
-                }
+            super.leave(client, scope);
+        } finally {
+            if (lock.isLocked()) {
+                lock.unlock();
             }
-        } catch (InterruptedException e) {
-            log.error("Failed to lock", e);
         }
     }
 
