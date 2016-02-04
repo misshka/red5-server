@@ -20,6 +20,7 @@ package org.red5.server.adapter;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.red5.server.api.IClient;
 import org.red5.server.api.IConnection;
@@ -38,21 +39,21 @@ import org.red5.server.api.scope.IScope;
  */
 public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
 
-    private Semaphore lock;
+    private ReentrantLock lock = new ReentrantLock(true);
 
     /** {@inheritDoc} */
     @Override
     public boolean start(IScope scope) {
-        if (lock == null) {
-            lock = new Semaphore(1, true);
-        }
         try {
-            lock.tryAcquire(1, TimeUnit.SECONDS);
-            return super.start(scope);
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    return super.start(scope);
+                } finally {
+                    lock.unlock();
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            lock.release();
+            log.error("Failed to lock", e);
         }
         return false;
     }
@@ -60,13 +61,17 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     /** {@inheritDoc} */
     @Override
     public void stop(IScope scope) {
+
         try {
-            lock.tryAcquire(1, TimeUnit.SECONDS);
-            super.stop(scope);
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    super.stop(scope);
+                } finally {
+                    lock.unlock();
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            lock.release();
+            log.error("Failed to lock", e);
         }
     }
 
@@ -74,12 +79,15 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     @Override
     public boolean connect(IConnection conn, IScope scope, Object[] params) {
         try {
-            lock.tryAcquire(1, TimeUnit.SECONDS);
-            return super.connect(conn, scope, params);
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    return super.connect(conn, scope, params);
+                } finally {
+                    lock.unlock();
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            lock.release();
+            log.error("Failed to lock", e);
         }
         return false;
     }
@@ -88,12 +96,15 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     @Override
     public void disconnect(IConnection conn, IScope scope) {
         try {
-            lock.tryAcquire(1, TimeUnit.SECONDS);
-            super.disconnect(conn, scope);
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    super.disconnect(conn, scope);
+                } finally {
+                    lock.unlock();
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            lock.release();
+            log.error("Failed to lock", e);
         }
     }
 
@@ -101,12 +112,15 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     @Override
     public boolean join(IClient client, IScope scope) {
         try {
-            lock.tryAcquire(1, TimeUnit.SECONDS);
-            return super.join(client, scope);
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    return super.join(client, scope);
+                } finally {
+                    lock.unlock();
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            lock.release();
+            log.error("Failed to lock", e);
         }
         return false;
     }
@@ -115,12 +129,15 @@ public class ApplicationAdapter extends MultiThreadedApplicationAdapter {
     @Override
     public void leave(IClient client, IScope scope) {
         try {
-            lock.tryAcquire(1, TimeUnit.SECONDS);
-            super.leave(client, scope);
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    super.leave(client, scope);
+                } finally {
+                    lock.unlock();
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            lock.release();
+            log.error("Failed to lock", e);
         }
     }
 
