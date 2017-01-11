@@ -3,6 +3,7 @@ target/
 .project
 .classpath
 .DS_Store
+nb-configuration.xml
 
 *.zip
 *.tar.gz

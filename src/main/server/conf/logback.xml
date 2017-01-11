@@ -1,24 +1,56 @@
 <?xml version="1.0" ?>
-<configuration>
-    <appender class="ch.qos.logback.core.ConsoleAppender" name="CONSOLE">
-        <encoder>
-            <pattern>[%p] [%thread] %logger - %msg%n</pattern>
-        </encoder>
-    </appender>
-    <appender class="ch.qos.logback.core.FileAppender" name="FILE">
+<configuration scan="true">
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>log/red5.log</File>
         <Append>false</Append>
         <encoder>
             <pattern>%d{ISO8601} [%thread] %-5level %logger{35} - %msg%n</pattern>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>log/red5.%d{yyyy-MM-dd}.log.gz</FileNamePattern>
+            <MaxHistory>10</MaxHistory>
+        </rollingPolicy>
     </appender>
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
+
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="FILE"/>
     </root>
-    <logger name="org.springframework" level="INFO" />
-    <logger name="org.springframework.scheduling" level="WARN" />
-    <logger name="org.apache" level="INFO" />
-    <logger name="org.apache.jasper.servlet" level="WARN" />
-    <logger name="ch.qos" level="WARN" />
+
+    <logger name="org.springframework">
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="org.springframework.scheduling">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="org.apache">
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="ch.qos">
+        <level value="WARN"/>
+    </logger>
+    <logger name="org.red5.server.net.rtmp.BaseRTMPHandler">
+        <level value="OFF" />
+    </logger>
+    <logger name="org.red5.server.net.rtmp.codec">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.red5.server.net.rtmp.RTMPMinaIoHandler">
+        <level value="OFF" />
+    </logger>
+    <logger name="org.red5.server.stream.StreamService">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="org.red5.server.stream.ClientBroadcastStream">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="org.red5.server.stream.RecordingListener">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="org.red5.io.flv.impl.FLVWriter">
+        <level value="INFO" />
+    </logger>
 </configuration>
