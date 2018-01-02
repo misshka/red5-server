@@ -20,6 +20,9 @@ package org.red5.server.net.rtmp;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.mina.core.buffer.IoBuffer;
@@ -43,6 +46,7 @@ import org.slf4j.LoggerFactory;
 public class RTMPMinaIoHandler extends IoHandlerAdapter {
 
     private static Logger log = LoggerFactory.getLogger(RTMPMinaIoHandler.class);
+    protected static final ScheduledExecutorService closeSheduleExecutor = Executors.newScheduledThreadPool(32);
 
     /**
      * RTMP events handler
@@ -209,6 +213,7 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
             // set flag
             session.setAttribute("FORCED_CLOSE", Boolean.TRUE);
             session.suspendRead();
+            session.suspendWrite();
             cleanSession(session, true);
         }
     }
@@ -268,6 +273,7 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
             }
         };
         future.addListener(listener);
+        closeSheduleExecutor.schedule(new CheckCloseFutureJob(future, listener, session), 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -289,5 +295,34 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
 
     protected RTMPMinaConnection createRTMPMinaConnection() {
         return (RTMPMinaConnection) RTMPConnManager.getInstance().createConnection(RTMPMinaConnection.class);
+    }
+
+    private class CheckCloseFutureJob implements Runnable
+    {
+        private CloseFuture future;
+        private IoFutureListener<CloseFuture> listener;
+        private IoSession session;
+
+        public CheckCloseFutureJob(CloseFuture future, IoFutureListener<CloseFuture> listener, IoSession session) {
+            this.future = future;
+            this.listener = listener;
+            this.session = session;
+        }
+        @Override
+        public void run()
+        {
+            log.trace("Check session: {}", session);
+            if (session.isActive()) {
+                log.warn("session is Active: {}", session.getId());
+                session.closeNow();
+            }
+            log.trace("Check future: {}, listener: {}", future, listener);
+            if (future != null && listener != null) {
+                future.removeListener(listener);
+                listener = null;
+                future.setClosed();
+                future = null;
+            }
+        }
     }
 }
