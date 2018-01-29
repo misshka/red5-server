@@ -38,6 +38,7 @@ import org.apache.mina.core.service.AbstractIoService;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.service.IoServiceStatistics;
 import org.apache.mina.core.service.SimpleIoProcessorPool;
+import org.apache.mina.filter.logging.LogLevel;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
@@ -145,13 +146,13 @@ public class RTMPMinaTransport implements RTMPMinaTransportMXBean {
         if (enableMinaLogFilter) {
             DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
             LoggingFilter logFilter = new LoggingFilter(RTMPMinaTransport.class);
-            //logFilter.setExceptionCaughtLogLevel(LogLevel.TRACE);
-            //logFilter.setMessageReceivedLogLevel(LogLevel.TRACE);
-            //logFilter.setMessageSentLogLevel(LogLevel.TRACE);
-            //logFilter.setSessionClosedLogLevel(LogLevel.TRACE);
-            //logFilter.setSessionCreatedLogLevel(LogLevel.TRACE);
-            //logFilter.setSessionIdleLogLevel(LogLevel.TRACE);
-            //logFilter.setSessionOpenedLogLevel(LogLevel.TRACE);
+            logFilter.setExceptionCaughtLogLevel(LogLevel.TRACE);
+            logFilter.setMessageReceivedLogLevel(LogLevel.TRACE);
+            logFilter.setMessageSentLogLevel(LogLevel.TRACE);
+            logFilter.setSessionClosedLogLevel(LogLevel.TRACE);
+            logFilter.setSessionCreatedLogLevel(LogLevel.TRACE);
+            logFilter.setSessionIdleLogLevel(LogLevel.TRACE);
+            logFilter.setSessionOpenedLogLevel(LogLevel.TRACE);
             chain.addLast("logger", logFilter);
         }
         // close sessions when the acceptor is stopped
