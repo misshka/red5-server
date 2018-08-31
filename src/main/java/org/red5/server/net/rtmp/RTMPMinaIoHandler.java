@@ -20,7 +20,10 @@ package org.red5.server.net.rtmp;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.net.SocketException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.mina.core.buffer.IoBuffer;
@@ -46,6 +49,7 @@ import org.slf4j.LoggerFactory;
 public class RTMPMinaIoHandler extends IoHandlerAdapter {
 
     private static Logger log = LoggerFactory.getLogger(RTMPMinaIoHandler.class);
+    protected static final ScheduledExecutorService closeSheduleExecutor = Executors.newScheduledThreadPool(32);
 
     /**
      * RTMP events handler
@@ -232,14 +236,25 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
             log.debug("IOException caught on {}", sessionId);
         } else {
             log.debug("Non-IOException caught on {}", sessionId);
-            if (session.containsAttribute("FORCED_CLOSE")) {
-                log.info("Close already forced on this session: {}", session.getId());
-            } else {
-                // set flag
-                session.setAttribute("FORCED_CLOSE", Boolean.TRUE);
-                //session.suspendRead();
-                cleanSession(session, true);
-            }
+            forceClose(session);
+        }
+    }
+
+    /**
+     * Force the NioSession to be released and cleaned up.
+     * 
+     * @param session
+     */
+    private void forceClose(final IoSession session) {
+        log.warn("Force close - session: {}", session.getId());
+        if (session.containsAttribute("FORCED_CLOSE")) {
+            log.info("Close already forced on this session: {}", session.getId());
+        } else {
+            // set flag
+            session.setAttribute("FORCED_CLOSE", Boolean.TRUE);
+            session.suspendRead();
+            session.suspendWrite();
+            cleanSession(session, true);
         }
     }
 
@@ -260,48 +275,38 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
                 log.debug("Forcing close on session: {} id: {}", session.getId(), sessionId);
                 log.debug("Session closing: {}", session.isClosing());
             }
-            // get the write request queue
-            final WriteRequestQueue writeQueue = session.getWriteRequestQueue();
-            if (writeQueue != null && !writeQueue.isEmpty(session)) {
-                log.debug("Clearing write queue");
-                try {
-                    writeQueue.clear(session);
-                } catch (Exception ex) {
-                    // clear seems to cause a write to closed session ex in some cases
-                    log.warn("Exception clearing write queue for {}", sessionId, ex);
-                }
-            }
-            // force close the session
-            final CloseFuture future = immediately ? session.closeNow() : session.closeOnFlush();
-            IoFutureListener<CloseFuture> listener = new IoFutureListener<CloseFuture>() {
-                @SuppressWarnings({ "unchecked", "rawtypes" })
-                public void operationComplete(CloseFuture future) {
-                    // now connection should be closed
-                    log.debug("Close operation completed {}: {}", sessionId, future.isClosed());
-                    future.removeListener(this);
-                    for (Object key : session.getAttributeKeys()) {
-                        Object obj = session.getAttribute(key);
-                        log.debug("{}: {}", key, obj);
-                        if (obj != null) {
-                            if (log.isTraceEnabled()) {
-                                log.trace("Attribute: {}", obj.getClass().getName());
-                            }
-                            if (obj instanceof IoProcessor) {
-                                log.debug("Flushing session in processor");
-                                ((IoProcessor) obj).flush(session);
-                                log.debug("Removing session from processor");
-                                ((IoProcessor) obj).remove(session);
-                            } else if (obj instanceof IoBuffer) {
-                                log.debug("Clearing session buffer");
-                                ((IoBuffer) obj).clear();
-                                ((IoBuffer) obj).free();
-                            }
+        }
+        // force close the session
+        final CloseFuture future = immediately ? session.closeNow() : session.closeOnFlush();
+        IoFutureListener<CloseFuture> listener = new IoFutureListener<CloseFuture>() {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            public void operationComplete(CloseFuture future) {
+                // now connection should be closed
+                log.debug("Close operation completed {}: {}", sessionId, future.isClosed());
+                future.removeListener(this);
+                for (Object key : session.getAttributeKeys()) {
+                    Object obj = session.getAttribute(key);
+                    log.debug("{}: {}", key, obj);
+                    if (obj != null) {
+                        if (log.isTraceEnabled()) {
+                            log.trace("Attribute: {}", obj.getClass().getName());
+                        }
+                        if (obj instanceof IoProcessor) {
+                            log.debug("Flushing session in processor");
+                            ((IoProcessor) obj).flush(session);
+                            log.debug("Removing session from processor");
+                            ((IoProcessor) obj).remove(session);
+                        } else if (obj instanceof IoBuffer) {
+                            log.debug("Clearing session buffer");
+                            ((IoBuffer) obj).clear();
+                            ((IoBuffer) obj).free();
                         }
                     }
                 }
-            };
-            future.addListener(listener);
-        }
+            }
+        };
+        future.addListener(listener);
+        closeSheduleExecutor.schedule(new CheckCloseFutureJob(future, listener, session), 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -325,5 +330,34 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
 
     protected RTMPMinaConnection createRTMPMinaConnection() {
         return (RTMPMinaConnection) RTMPConnManager.getInstance().createConnection(RTMPMinaConnection.class);
+    }
+
+    private class CheckCloseFutureJob implements Runnable
+    {
+        private CloseFuture future;
+        private IoFutureListener<CloseFuture> listener;
+        private IoSession session;
+
+        public CheckCloseFutureJob(CloseFuture future, IoFutureListener<CloseFuture> listener, IoSession session) {
+            this.future = future;
+            this.listener = listener;
+            this.session = session;
+        }
+        @Override
+        public void run()
+        {
+            log.trace("Check session: {}", session);
+            if (session.isActive()) {
+                log.warn("session is Active: {}", session.getId());
+                session.closeNow();
+            }
+            log.trace("Check future: {}, listener: {}", future, listener);
+            if (future != null && listener != null) {
+                future.removeListener(listener);
+                listener = null;
+                future.setClosed();
+                future = null;
+            }
+        }
     }
 }
