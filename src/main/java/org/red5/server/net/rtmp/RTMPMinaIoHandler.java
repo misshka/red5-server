@@ -282,7 +282,7 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter {
             @SuppressWarnings({ "unchecked", "rawtypes" })
             public void operationComplete(CloseFuture future) {
                 // now connection should be closed
-                log.debug("Close operation completed {}: {}", sessionId, future.isClosed());
+                //log.debug("Close operation completed {}: {}", sessionId, future.isClosed());
                 future.removeListener(this);
                 for (Object key : session.getAttributeKeys()) {
                     Object obj = session.getAttribute(key);
