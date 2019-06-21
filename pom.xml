@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>1.0.10-M9</version>
+        <version>1.1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>red5-server</artifactId>
@@ -80,28 +80,6 @@
         <defaultGoal>install</defaultGoal>
         <directory>${build.dir}</directory>
         <finalName>${finalName}</finalName>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>src/test/java</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -160,30 +138,11 @@
             <artifactId>log4j-over-slf4j</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-access</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>uk.org.lidalia</groupId>
-            <artifactId>sysout-over-slf4j</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -257,6 +216,7 @@
             <artifactId>red5-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.red5</groupId>
@@ -264,30 +224,12 @@
             <version>${project.version}</version>
             <type>tar.gz</type>
             <classifier>daemon</classifier>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <artifactId>mina-integration-beans</artifactId>
             <groupId>org.apache.mina</groupId>
             <version>${mina.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
-            <version>${quartz.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>c3p0</groupId>
-                    <artifactId>c3p0</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>c3p0</artifactId>
-                    <groupId>com.mchange</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>HikariCP-java6</artifactId>
-                    <groupId>com.zaxxer</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Runtime plugin deps -->
         <dependency>
@@ -320,6 +262,12 @@
             <artifactId>cors-filter</artifactId>
             <version>${cors-filter.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.google.code.gson</groupId>
+          <artifactId>gson</artifactId>
+          <version>2.8.5</version>
+          <scope>test</scope>
         </dependency>
     </dependencies>
     <profiles>
@@ -354,25 +302,6 @@
                                     <outputDirectory>${project.build.directory}/plugins</outputDirectory>
                                     <includeScope>provided</includeScope>
                                     <excludeTransitive>false</excludeTransitive>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>copy-dependency-websocket-plugin</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>copy</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                          <groupId>org.red5</groupId>
-                                          <artifactId>websocket</artifactId>
-                                          <version>${websocket.version}</version>
-                                          <type>jar</type>
-                                          <overWrite>true</overWrite>
-                                          <outputDirectory>${project.build.directory}/plugins</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
                                 </configuration>
                             </execution>
                             <execution>

@@ -78,14 +78,8 @@
 
     <bean id="room1" class="org.red5.server.scope.RoomScope" init-method="init" >
         <property name="parent" ref="web.scope" />
-        <property name="name" value="room1" />
+        <property name="name" value="room0" />
         <property name="handler" ref="web.handler" />
     </bean>
 
-    <bean id="room99" class="org.red5.server.scope.RoomScope" init-method="init" >
-        <property name="parent" ref="web.scope" />
-        <property name="name" value="room99" />
-        <property name="handler" ref="web.handler" />
-    </bean>	
-	
 </beans>

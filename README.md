@@ -14,12 +14,6 @@ Red5 is an Open Source Flash Server written in Java that supports:
  * Live Stream Publishing
  * Remoting
  * Protocols: RTMP, RTMPT, RTMPS, and RTMPE
-  
-Additional features supported via plugin:
- 
- * [WebSocket (ws and wss)](https://github.com/Red5/red5-websocket)
- * [RTSP (From Axis-type cameras)](https://github.com/Red5/red5-rtsp-restreamer)
- * [HLS](https://github.com/Red5/red5-hls-plugin)
 
 The Red5 users list may be found here: [red5interest](https://groups.google.com/forum/#!forum/red5interest)
 
@@ -30,15 +24,7 @@ Automatic builds (Courtesy of Apache [OpenMeetings](http://openmeetings.apache.o
  * [Windows Installer](https://builds.apache.org/view/M-R/view/OpenMeetings/job/red5-installer/)
 
 # [Releases](https://github.com/Red5/red5-server/releases/latest)
-----------------
-### Red5 1.0.9 Release (11 June 2017)
-[Tarball &amp; ZIP](https://github.com/Red5/red5-server/releases/tag/v1.0.9-RELEASE)
-
-### Red5 1.0.8 Release (23 December 2016)
-[Tarball &amp; ZIP](https://github.com/Red5/red5-server/releases/tag/v1.0.8-RELEASE)
-
-## Previous
-[Previous releases](https://github.com/Red5/red5-server/blob/master/README.md#previous-releases)
+# [Previous releases](https://github.com/Red5/red5-server/blob/master/README.md#previous-releases)
 
 <i>Note on Bootstrap</i>
 
@@ -103,10 +89,21 @@ mvn eclipse:eclipse
 4. Now the project will build automatically, if you have the maven plugin installed.
 
 [Screencast](http://screencast.com/t/2sgjMevf9)
-
+  
+Features supported via plugin (These are mostly deprecated):
+ * [WebSocket (ws and wss)](https://github.com/Red5/red5-websocket)
+ * [RTSP (From Axis-type cameras)](https://github.com/Red5/red5-rtsp-restreamer)
+ * [HLS](https://github.com/Red5/red5-hls-plugin)
+ 
 # Older Releases
 The artifacts for the following releases are no longer available; if your project requires them, you'll have to build them from source. The listings are here only for historical purposes.
 
+
+ * [Red5 1.1.1 Release](https://github.com/Red5/red5-server/releases/tag/v1.1.1-RELEASE) (29 May 2019)
+ * [Red5 1.1.0 Release](https://github.com/Red5/red5-server/releases/tag/v1.1.0-RELEASE) (22 April 2019)
+ * [Red5 1.0.10 Release](https://github.com/Red5/red5-server/releases/tag/v1.0.10-RELEASE) (9 February 2019)
+ * [Red5 1.0.9 Release](https://github.com/Red5/red5-server/releases/tag/v1.0.9-RELEASE) (11 June 2017)
+ * [Red5 1.0.8 Release](https://github.com/Red5/red5-server/releases/tag/v1.0.8-RELEASE) (23 December 2016)
  * [Red5 1.0.7 Release](https://github.com/Red5/red5-server/releases/tag/v1.0.7-RELEASE) (12 May 2016)
  * [Red5 1.0.6 Release](https://github.com/Red5/red5-server/releases/tag/v1.0.6-RELEASE) (8 September 2015)
  * [Red5 1.0.5 Release](https://github.com/Red5/red5-server/releases/tag/v1.0.5-RELEASE) (7 February 2015)
